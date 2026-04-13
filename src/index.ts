@@ -54,13 +54,13 @@ app.post("/mcp", async (req: Request, res: Response) => {
   const server = createMcpServer();
   await server.connect(transport);
 
-  // Store transport after connection (sessionId is now set)
-  if (transport.sessionId) {
-    transports.set(transport.sessionId, transport);
-  }
-
   try {
     await transport.handleRequest(req, res, req.body);
+
+    // Store transport after first request (sessionId is now set by handleRequest)
+    if (transport.sessionId && !transports.has(transport.sessionId)) {
+      transports.set(transport.sessionId, transport);
+    }
   } catch (error) {
     console.error("Error handling MCP request:", error);
     if (!res.headersSent) {
