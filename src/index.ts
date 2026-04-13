@@ -65,7 +65,12 @@ async function main() {
   await server.connect(transport);
   console.log("MCP server connected to transport");
 
-  await startBot();
+  try {
+    await startBot();
+  } catch (error) {
+    console.warn("Telegram bot failed to start:", error);
+    console.warn("MCP server will run without bot polling. Tools will error when called.");
+  }
 
   app.listen(PORT, () => {
     console.log(`Telegram MCP server listening on port ${PORT}`);
