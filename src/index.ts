@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { createMcpServer } from "./mcp-server.js";
 import { startBot } from "./telegram.js";
+import { initDb } from "./db.js";
 
 const app = express();
 app.use(express.json());
@@ -119,6 +120,14 @@ app.delete("/mcp", async (req: Request, res: Response) => {
 const PORT = process.env.PORT || 3000;
 
 async function main() {
+  try {
+    await initDb();
+    console.log("Database initialized");
+  } catch (error) {
+    console.warn("Database init failed:", error);
+    console.warn("Auto-reply will not work without database.");
+  }
+
   try {
     await startBot();
     console.log("Telegram bot started");

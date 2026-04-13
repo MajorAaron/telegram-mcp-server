@@ -1,4 +1,5 @@
 import { Bot, Context } from "grammy";
+import { handleAutoReply } from "./auto-reply.js";
 
 export interface TelegramMessage {
   messageId: number;
@@ -44,6 +45,13 @@ export function getBot(): Bot {
       messageBuffer.push(entry);
       if (messageBuffer.length > MAX_BUFFER_SIZE) {
         messageBuffer.shift();
+      }
+
+      // Auto-reply using Claude API (only for text messages)
+      if (entry.text) {
+        handleAutoReply(entry.chatId, entry.text).catch((err) => {
+          console.error("Auto-reply failed:", err);
+        });
       }
     });
   }
