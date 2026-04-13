@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { toolDefinitions, executeTool } from "./tools/index.js";
+import { getToolDefinitions, executeTool } from "./tools/index.js";
+import { loadConfig } from "./config.js";
 import type { ConversationMessage } from "./db.js";
 
 const MAX_TOOL_ITERATIONS = 10;
@@ -13,21 +14,14 @@ function getClient(): Anthropic {
   return anthropicClient;
 }
 
-const SYSTEM_PROMPT = `You are Ryu, a helpful general-purpose assistant communicating via Telegram. You are conversational, concise, and friendly.
-
-You have tools available:
-- search_history: Search older conversation messages when you need context from past chats
-- deploy_site: Deploy HTML pages to Netlify as live websites
-
-Keep responses concise since this is a chat interface. Use Telegram-friendly formatting when helpful.`;
-
 export async function getReply(
   chatId: number,
   history: ConversationMessage[],
   userMessage: string
 ): Promise<string> {
   const client = getClient();
-  const model = process.env.CLAUDE_MODEL || "claude-sonnet-4-6";
+  const config = loadConfig();
+  const tools = getToolDefinitions(config.enabledTools);
 
   const messages: Anthropic.MessageParam[] = [
     ...history.map((m) => ({
@@ -43,10 +37,10 @@ export async function getReply(
     iterations++;
 
     const response = await client.messages.create({
-      model,
+      model: config.model,
       max_tokens: 4096,
-      system: SYSTEM_PROMPT,
-      tools: toolDefinitions,
+      system: config.systemPrompt,
+      tools: tools.length > 0 ? tools : undefined,
       messages,
     });
 

@@ -2,8 +2,8 @@ import type Anthropic from "@anthropic-ai/sdk";
 import { executeSearchHistory } from "./search-history.js";
 import { executeDeploySite } from "./deploy-site.js";
 
-export const toolDefinitions: Anthropic.Tool[] = [
-  {
+const ALL_TOOLS: Record<string, Anthropic.Tool> = {
+  search_history: {
     name: "search_history",
     description:
       "Search older conversation messages beyond what's loaded in context. Use when the user references past conversations or you need more context.",
@@ -22,7 +22,7 @@ export const toolDefinitions: Anthropic.Tool[] = [
       required: ["query"],
     },
   },
-  {
+  deploy_site: {
     name: "deploy_site",
     description:
       "Deploy an HTML page to Netlify as a live website. Use when the user asks you to build, create, or host a simple website or page.",
@@ -46,7 +46,17 @@ export const toolDefinitions: Anthropic.Tool[] = [
       required: ["site_name", "html_content"],
     },
   },
-];
+};
+
+export function getToolDefinitions(enabledTools: string[]): Anthropic.Tool[] {
+  return enabledTools
+    .filter((name) => ALL_TOOLS[name])
+    .map((name) => ALL_TOOLS[name]);
+}
+
+export function registerTool(name: string, definition: Anthropic.Tool): void {
+  ALL_TOOLS[name] = definition;
+}
 
 export async function executeTool(
   toolName: string,

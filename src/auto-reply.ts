@@ -1,8 +1,7 @@
 import { loadHistory, saveMessage } from "./db.js";
 import { getReply } from "./claude.js";
 import { getBot } from "./telegram.js";
-
-const HISTORY_LIMIT = parseInt(process.env.HISTORY_LIMIT || "50", 10);
+import { loadConfig } from "./config.js";
 
 export async function handleAutoReply(
   chatId: number,
@@ -17,7 +16,8 @@ export async function handleAutoReply(
   await saveMessage(chatId, "user", userMessage);
 
   // Load conversation history (excluding the message we just saved — it's passed separately)
-  const history = await loadHistory(chatId, HISTORY_LIMIT);
+  const config = loadConfig();
+  const history = await loadHistory(chatId, config.historyLimit);
   // Remove the last entry since it's the message we just saved
   const priorHistory = history.slice(0, -1);
 
