@@ -27,7 +27,7 @@ export async function getReply(
   userMessage: string
 ): Promise<string> {
   const client = getClient();
-  const model = process.env.CLAUDE_MODEL || "claude-sonnet-4-6-20250514";
+  const model = process.env.CLAUDE_MODEL || "claude-sonnet-4-6";
 
   const messages: Anthropic.MessageParam[] = [
     ...history.map((m) => ({
